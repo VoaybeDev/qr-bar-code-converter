@@ -171,11 +171,110 @@ body {
   border-radius: 4px;
 }
 
-/* ── QR Reader ── */
-.reader-wrapper {
+/* ── Sub-tabs (Caméra / Image) ── */
+.sub-tabs {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+
+.sub-tab {
+  flex: 1;
+  padding: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 10px;
+  background: transparent;
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 0.88rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.sub-tab.active {
+  background: rgba(167, 139, 250, 0.2);
+  border-color: #a78bfa;
+  color: #ddd6fe;
+}
+
+.sub-tab:hover:not(.active) {
+  background: rgba(255, 255, 255, 0.07);
+  color: rgba(255, 255, 255, 0.75);
+}
+
+/* ── Camera section ── */
+.camera-section {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.video-wrapper {
+  position: relative;
   border-radius: 14px;
   overflow: hidden;
   border: 2px solid rgba(255, 255, 255, 0.15);
+  background: #000;
+  min-height: 200px;
+}
+
+.video-feed {
+  width: 100%;
+  display: block;
+  border-radius: 12px;
+}
+
+.video-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background: rgba(0, 0, 0, 0.6);
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 0.9rem;
+}
+
+.camera-icon {
+  font-size: 2.5rem;
+}
+
+/* ── File upload zone ── */
+.file-upload-zone {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 36px 20px;
+  border: 2px dashed rgba(167, 139, 250, 0.45);
+  border-radius: 14px;
+  background: rgba(167, 139, 250, 0.06);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-align: center;
+}
+
+.file-upload-zone:hover {
+  background: rgba(167, 139, 250, 0.14);
+  border-color: #a78bfa;
+}
+
+.upload-icon {
+  font-size: 2.4rem;
+}
+
+.upload-text {
+  font-size: 0.95rem;
+  color: rgba(255, 255, 255, 0.8);
+  font-weight: 600;
+}
+
+.upload-hint {
+  font-size: 0.78rem;
+  color: rgba(255, 255, 255, 0.4);
 }
 
 /* ── Scan result ── */
@@ -240,4 +339,56 @@ body {
   .title {
     font-size: 1.5rem;
   }
+}
+
+/* ── Camera section ── */
+.camera-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+.camera-start-btn {
+  width: 100%;
+  padding: 16px;
+  font-size: 1rem;
+}
+
+.scanning-label {
+  font-size: 0.95rem;
+  color: #a5f3fc;
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.4; }
+}
+
+/* html5-qrcode overrides */
+#qr-reader-container video {
+  border-radius: 12px;
+  width: 100% !important;
+}
+#qr-reader-container img { display: none; }
+
+/* ── Signature ── */
+.signature {
+  margin-top: 24px;
+  text-align: center;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  padding-top: 14px;
+}
+
+.signature a {
+  font-size: 0.78rem;
+  color: rgba(255, 255, 255, 0.3);
+  text-decoration: none;
+  letter-spacing: 0.5px;
+  transition: color 0.2s;
+}
+
+.signature a:hover {
+  color: #a78bfa;
 }
