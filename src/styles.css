@@ -1,0 +1,87 @@
+/* Reset default styles */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Arial', sans-serif;
+  background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+  color: white;
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.app {
+  text-align: center;
+  padding: 20px;
+  max-width: 500px;
+  width: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  border-radius: 10px;
+}
+
+.title {
+  font-size: 2rem;
+  background: linear-gradient(45deg, #ff0000, #ff7300, #fffb00, #3f9fff, #2e2e2e);
+  color: transparent;
+  font-weight: bold;
+  background-clip: text;
+  -webkit-background-clip: text; /* Maintient le support sur certains navigateurs */
+  -webkit-text-fill-color: transparent; /* Remplace la couleur du texte par le dégradé */
+}
+
+.content {
+  margin-top: 20px;
+}
+
+.label {
+  margin-bottom: 10px;
+  font-size: 1.2rem;
+}
+
+.input {
+  width: 80%;
+  padding: 8px;
+  margin: 10px 0;
+  border-radius: 5px;
+  border: none;
+  font-size: 1rem;
+}
+
+.button {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 5px;
+  margin: 10px;
+  cursor: pointer;
+  font-size: 1rem;
+}
+
+.generate {
+  background-color: #4caf50;
+  color: white;
+}
+
+.save {
+  background-color: #2196f3;
+  color: white;
+}
+
+.clear {
+  background-color: #f44336;
+  color: white;
+}
+
+.qr-preview {
+  margin-top: 20px;
+}
+
+.status {
+  margin-top: 20px;
+  font-size: 1.2rem;
+  font-weight: bold;
+}
