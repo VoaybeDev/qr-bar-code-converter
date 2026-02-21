@@ -1,4 +1,3 @@
-/* Reset default styles */
 * {
   margin: 0;
   padding: 0;
@@ -6,104 +5,239 @@
 }
 
 body {
-  font-family: 'Arial', sans-serif;
-  background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
-  color: white;
-  height: 100vh;
+  font-family: 'Segoe UI', Arial, sans-serif;
+  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+  min-height: 100vh;
   display: flex;
   justify-content: center;
-  align-items: center;
-  flex-direction: column;
+  align-items: flex-start;
+  padding: 40px 16px;
 }
 
+/* ── App container ── */
 .app {
-  text-align: center;
-  padding: 20px;
-  max-width: 500px;
   width: 100%;
-  background: rgba(0, 0, 0, 0.5);
-  border-radius: 10px;
+  max-width: 460px;
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 20px;
+  padding: 32px 28px;
+  color: white;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.4);
 }
 
+/* ── Title ── */
 .title {
-  font-size: 2rem;
-  background: linear-gradient(45deg, #ff0000, #ff7300, #fffb00, #3f9fff, #2e2e2e);
+  font-size: 1.8rem;
+  font-weight: 700;
+  text-align: center;
+  letter-spacing: 1px;
+  margin-bottom: 28px;
+  background: linear-gradient(90deg, #a78bfa, #60a5fa, #34d399);
   -webkit-background-clip: text;
-  color: transparent;
-  font-weight: bold;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
 
-.content {
-  margin-top: 20px;
-  width: 100%;
+/* ── Tabs ── */
+.tabs {
+  display: flex;
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  padding: 4px;
+  margin-bottom: 28px;
+  gap: 4px;
 }
 
-.label {
-  margin-bottom: 10px;
-  font-size: 1.2rem;
-}
-
-.input {
-  width: 80%;
-  padding: 10px;
-  margin: 10px 0;
-  border-radius: 5px;
+.tab {
+  flex: 1;
+  padding: 12px;
   border: none;
+  border-radius: 10px;
+  background: transparent;
+  color: rgba(255, 255, 255, 0.55);
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  letter-spacing: 0.5px;
+}
+
+.tab.active {
+  background: rgba(255, 255, 255, 0.18);
+  color: white;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.25);
+}
+
+.tab:hover:not(.active) {
+  color: rgba(255, 255, 255, 0.8);
+  background: rgba(255, 255, 255, 0.06);
+}
+
+/* ── Panel ── */
+.panel {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.panel-desc {
+  font-size: 0.9rem;
+  color: rgba(255, 255, 255, 0.55);
+  text-align: center;
+}
+
+/* ── Input ── */
+.input {
+  width: 100%;
+  padding: 14px 16px;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  background: rgba(255, 255, 255, 0.1);
+  color: white;
   font-size: 1rem;
   outline: none;
+  transition: border-color 0.2s;
 }
 
+.input::placeholder {
+  color: rgba(255, 255, 255, 0.35);
+}
+
+.input:focus {
+  border-color: #a78bfa;
+}
+
+/* ── Button row ── */
+.btn-row {
+  display: flex;
+  gap: 10px;
+}
+
+/* ── Buttons ── */
 .button {
-  padding: 10px 20px;
+  flex: 1;
+  padding: 13px 16px;
   border: none;
-  border-radius: 5px;
-  margin: 10px;
+  border-radius: 10px;
+  font-size: 0.95rem;
+  font-weight: 600;
   cursor: pointer;
-  font-size: 1rem;
-  width: 100%;
-  transition: background-color 0.3s ease;
+  transition: opacity 0.2s, transform 0.15s;
+  letter-spacing: 0.3px;
+}
+
+.button:hover {
+  opacity: 0.85;
+  transform: translateY(-1px);
+}
+
+.button:active {
+  transform: translateY(0);
 }
 
 .generate {
-  background-color: #4caf50;
+  background: linear-gradient(135deg, #6d28d9, #7c3aed);
   color: white;
 }
 
 .clear {
-  background-color: #f44336;
-  color: white;
+  background: rgba(255, 255, 255, 0.12);
+  color: rgba(255, 255, 255, 0.8);
 }
 
 .save {
-  background-color: #2196f3;
+  background: linear-gradient(135deg, #0369a1, #0ea5e9);
   color: white;
+  width: 100%;
+  flex: none;
+  margin-top: 4px;
 }
 
-.button:hover {
-  opacity: 0.8;
+/* ── QR display box ── */
+.qr-box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  background: white;
+  border-radius: 16px;
+  padding: 24px;
+  animation: fadeIn 0.3s ease;
 }
 
-.qr-preview {
-  margin-top: 20px;
+.qr-box canvas {
+  border-radius: 4px;
 }
 
+/* ── QR Reader ── */
+.reader-wrapper {
+  border-radius: 14px;
+  overflow: hidden;
+  border: 2px solid rgba(255, 255, 255, 0.15);
+}
+
+/* ── Scan result ── */
+.scan-result {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 12px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  animation: fadeIn 0.3s ease;
+}
+
+.result-label {
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.result-text {
+  font-size: 1rem;
+  word-break: break-all;
+  color: #a5f3fc;
+}
+
+/* ── Status bar ── */
 .status {
   margin-top: 20px;
-  font-size: 1.2rem;
-  font-weight: bold;
+  padding: 12px 16px;
+  border-radius: 10px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  text-align: center;
+  animation: fadeIn 0.3s ease;
 }
-/* Responsiveness */
-@media (max-width: 600px) {
+
+.status.success {
+  background: rgba(52, 211, 153, 0.15);
+  border: 1px solid rgba(52, 211, 153, 0.4);
+  color: #6ee7b7;
+}
+
+.status.error {
+  background: rgba(248, 113, 113, 0.15);
+  border: 1px solid rgba(248, 113, 113, 0.4);
+  color: #fca5a5;
+}
+
+/* ── Animation ── */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ── Mobile ── */
+@media (max-width: 480px) {
   .app {
-    padding: 15px;
-    margin: 10px;
+    padding: 24px 18px;
   }
-
-  .input {
-    width: 100%;
-  }
-
-  .button {
-    width: 100%;
+  .title {
+    font-size: 1.5rem;
   }
 }
