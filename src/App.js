@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 import React, { useState, useEffect, useRef } from "react";
 import QRCodeStyling from "qr-code-styling";
 import { Html5Qrcode } from "html5-qrcode";
@@ -97,7 +98,7 @@ function App() {
       backgroundOptions: { color: bgColor },
       image: logo || undefined,
     });
-  }, [dotColor, cornerColor, bgColor, dotStyle, cornerStyle, logo, qrVisible]);
+  }, [dotColor, cornerColor, bgColor, dotStyle, cornerStyle, logo, qrVisible, text]);
 
   // ── Attacher le QR au DOM dès qu'il est visible ─────────
   useEffect(() => {
@@ -204,6 +205,29 @@ function App() {
 
   const clearScan = async () => {
     await stopCamera(); setScannedResult(null); setStatus(null);
+  };
+
+  // ── Copier dans le presse-papiers (HTTP + HTTPS) ───────
+  const copyToClipboard = (txt) => {
+    if (navigator.clipboard && window.isSecureContext) {
+      navigator.clipboard.writeText(txt).then(() =>
+        setStatus({ type: "success", msg: "Copié dans le presse-papiers !" })
+      );
+    } else {
+      const el = document.createElement("textarea");
+      el.value = txt;
+      el.style.position = "fixed";
+      el.style.opacity = "0";
+      document.body.appendChild(el);
+      el.select();
+      try {
+        document.execCommand("copy");
+        setStatus({ type: "success", msg: "Copié dans le presse-papiers !" });
+      } catch {
+        setStatus({ type: "error", msg: "Copie échouée — copiez manuellement." });
+      }
+      document.body.removeChild(el);
+    }
   };
 
   // ── Rendu ───────────────────────────────────────────────
@@ -364,7 +388,7 @@ function App() {
               <p className="result-text">{scannedResult}</p>
               <div className="btn-row">
                 <button className="button generate"
-                  onClick={()=>navigator.clipboard.writeText(scannedResult).then(()=>setStatus({type:"success",msg:"Copié !"}))}
+                  onClick={()=>copyToClipboard(scannedResult)}
                 >Copier</button>
                 <button className="button clear" onClick={clearScan}>Nouveau scan</button>
               </div>
