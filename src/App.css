@@ -152,9 +152,7 @@ body {
   background: white; border-radius: 16px; padding: 24px;
   animation: fadeIn 0.3s ease;
 }
-.qr-canvas-wrapper canvas, .qr-canvas-wrapper svg {
-  border-radius: 6px;
-}
+.qr-canvas-wrapper canvas, .qr-canvas-wrapper svg { border-radius: 6px; }
 
 /* ── Sub-tabs ── */
 .sub-tabs { display: flex; gap: 8px; }
@@ -167,11 +165,44 @@ body {
 .sub-tab:hover:not(.active) { background: rgba(255,255,255,0.07); color: rgba(255,255,255,0.75); }
 
 /* ── Camera ── */
-.camera-section { display: flex; flex-direction: column; align-items: center; gap: 12px; }
+.camera-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
 .camera-start-btn { width: 100%; padding: 16px; font-size: 1rem; flex: none; }
-.scanning-label { color: #a5f3fc; animation: pulse 1.5s ease-in-out infinite; }
-#qr-reader-container video { border-radius: 12px; width: 100% !important; }
-#qr-reader-container img { display: none; }
+.scanning-label   { color: #a5f3fc; animation: pulse 1.5s ease-in-out infinite; }
+
+/*
+  Conteneur vidéo Html5Qrcode.
+  Par défaut invisible (hauteur 0) ; la classe .active l'affiche.
+  On ne peut PAS utiliser display:none car Html5Qrcode a besoin que
+  l'élément ait des dimensions pour injecter la vidéo correctement.
+*/
+.qr-reader-box {
+  width: 100%;
+  overflow: hidden;
+  border-radius: 14px;
+  max-height: 0;
+  opacity: 0;
+  transition: max-height 0.3s ease, opacity 0.3s ease;
+}
+.qr-reader-box.active {
+  max-height: 400px;
+  opacity: 1;
+}
+
+/* Styles injectés par Html5Qrcode à l'intérieur du conteneur */
+#qr-reader-container video {
+  width: 100% !important;
+  border-radius: 12px;
+  display: block;
+}
+/* Masquer les éléments UI par défaut de Html5Qrcode */
+#qr-reader-container img  { display: none !important; }
+#qr-reader-container > div[style*="text-align"] { display: none !important; }
 
 /* ── File upload ── */
 .file-upload-zone {
