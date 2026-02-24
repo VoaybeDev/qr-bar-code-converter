@@ -2,6 +2,8 @@
 import React, { useState, useEffect, useRef } from "react";
 import QRCodeStyling from "qr-code-styling";
 import { Html5Qrcode } from "html5-qrcode";
+import { BarcodeScanner } from "@capacitor-community/barcode-scanner";
+import { Capacitor } from "@capacitor/core";
 import './App.css';
 
 const DOT_STYLES = [
@@ -27,6 +29,8 @@ const PRESETS = [
   { name: "Classique", dotColor: "#000000", cornerColor: "#000000", bg: "#ffffff", dotStyle: "square",         cornerStyle: "square"        },
 ];
 
+const isNative = Capacitor.isNativePlatform();
+
 function App() {
   const [mode, setMode]                   = useState("generate");
   const [scanMode, setScanMode]           = useState("camera");
@@ -50,7 +54,6 @@ function App() {
   const logoInputRef   = useRef(null);
   const html5QrRef     = useRef(null);
 
-  // ── Init QRCodeStyling ──────────────────────────────────
   useEffect(() => {
     qrCodeRef.current = new QRCodeStyling({
       width: 260, height: 260,
@@ -83,7 +86,6 @@ function App() {
     }
   }, [qrVisible]);
 
-  // ── Générer ─────────────────────────────────────────────
   const generateQrCode = () => {
     if (text.trim() === "") {
       setStatus({ type: "error", msg: "Veuillez entrer un texte avant de générer." });
@@ -121,45 +123,87 @@ function App() {
     e.target.value = "";
   };
 
-  // ── Scanner ─────────────────────────────────────────────
+  /* ── stopCamera ──────────────────────────────────────── */
   const stopCamera = async () => {
-    if (html5QrRef.current && cameraActive) {
+    if (isNative) {
       try {
-        await html5QrRef.current.stop();
-        html5QrRef.current.clear();
+        await BarcodeScanner.stopScan();
+        await BarcodeScanner.showBackground();
+        document.body.classList.remove("scanner-active");
       } catch (_) {}
-      html5QrRef.current = null;
       setCameraActive(false);
+    } else {
+      if (html5QrRef.current && cameraActive) {
+        try { await html5QrRef.current.stop(); html5QrRef.current.clear(); } catch (_) {}
+        html5QrRef.current = null;
+        setCameraActive(false);
+      }
     }
   };
 
   useEffect(() => { return () => { stopCamera(); }; }, []);
 
+  /* ── startCamera ─────────────────────────────────────── */
   const startCamera = async () => {
-    // Nettoyer avant de réinitialiser
-    const container = document.getElementById("qr-reader-container");
-    if (container) container.innerHTML = "";
+    if (isNative) {
+      try {
+        // 1. Demander la permission
+        const permission = await BarcodeScanner.checkPermission({ force: true });
+        if (!permission.granted) {
+          setStatus({ type: "error", msg: "Permission caméra refusée." });
+          return;
+        }
 
-    try {
-      const qr = new Html5Qrcode("qr-reader-container");
-      html5QrRef.current = qr;
+        // 2. Préparer l'UI (AVANT hideBackground pour éviter le flash)
+        setCameraActive(true);
+        setStatus(null);
 
-      await qr.start(
-        { facingMode: "environment" },
-        { fps: 10, qrbox: { width: 220, height: 220 } },
-        (decoded) => {
-          setScannedResult(decoded);
+        // 3. Rendre la WebView transparente → on voit la caméra native
+        await BarcodeScanner.hideBackground();
+        document.body.classList.add("scanner-active");
+
+        // 4. Démarrer le scan (bloquant jusqu'à détection)
+        const result = await BarcodeScanner.startScan();
+
+        // 5. Résultat reçu → nettoyer
+        document.body.classList.remove("scanner-active");
+        await BarcodeScanner.showBackground();
+        setCameraActive(false);
+
+        if (result.hasContent) {
+          setScannedResult(result.content);
           setStatus({ type: "success", msg: "QR Code détecté !" });
-          stopCamera();
-        },
-        () => {}
-      );
-
-      setCameraActive(true);
-      setStatus(null);
-    } catch (err) {
-      console.error(err);
-      setStatus({ type: "error", msg: "Impossible d'accéder à la caméra. Vérifiez les permissions." });
+        }
+      } catch (err) {
+        console.error(err);
+        document.body.classList.remove("scanner-active");
+        try { await BarcodeScanner.showBackground(); } catch (_) {}
+        setCameraActive(false);
+        setStatus({ type: "error", msg: "Erreur caméra. Vérifiez les permissions." });
+      }
+    } else {
+      // Web fallback
+      const container = document.getElementById("qr-reader-container");
+      if (container) container.innerHTML = "";
+      try {
+        const qr = new Html5Qrcode("qr-reader-container");
+        html5QrRef.current = qr;
+        await qr.start(
+          { facingMode: "environment" },
+          { fps: 10, qrbox: { width: 220, height: 220 } },
+          (decoded) => {
+            setScannedResult(decoded);
+            setStatus({ type: "success", msg: "QR Code détecté !" });
+            stopCamera();
+          },
+          () => {}
+        );
+        setCameraActive(true);
+        setStatus(null);
+      } catch (err) {
+        console.error(err);
+        setStatus({ type: "error", msg: "Impossible d'accéder à la caméra." });
+      }
     }
   };
 
@@ -218,22 +262,19 @@ function App() {
         <button className={`tab ${mode === "scan"     ? "active" : ""}`} onClick={() => handleModeSwitch("scan")}>🔍 Scanner</button>
       </div>
 
-      {/* ── GÉNÉRER ── */}
+      {/* ═══ GÉNÉRER ═══ */}
       {mode === "generate" && (
         <div className="panel">
           <p className="panel-desc">Entrez un texte ou une URL pour créer votre QR Code.</p>
-
           <input
             type="text" className="input" placeholder="https://exemple.com"
             value={text}
             onChange={(e) => { setText(e.target.value); setQrVisible(false); setStatus(null); }}
             onKeyDown={(e) => e.key === "Enter" && generateQrCode()}
           />
-
           <button className="toggle-custom-btn" onClick={() => setShowCustom(v => !v)}>
             🎨 Personnaliser {showCustom ? "▲" : "▼"}
           </button>
-
           {showCustom && (
             <div className="custom-panel">
               <div className="custom-section">
@@ -247,7 +288,6 @@ function App() {
                   ))}
                 </div>
               </div>
-
               <div className="custom-section">
                 <span className="custom-label">Couleurs</span>
                 <div className="color-row">
@@ -256,7 +296,6 @@ function App() {
                   <label className="color-item"><span>Fond</span>  <input type="color" value={bgColor}     onChange={e => setBgColor(e.target.value)}     /></label>
                 </div>
               </div>
-
               <div className="custom-section">
                 <span className="custom-label">Style des points</span>
                 <div className="style-grid">
@@ -265,7 +304,6 @@ function App() {
                   ))}
                 </div>
               </div>
-
               <div className="custom-section">
                 <span className="custom-label">Style des coins</span>
                 <div className="style-grid">
@@ -274,7 +312,6 @@ function App() {
                   ))}
                 </div>
               </div>
-
               <div className="custom-section">
                 <span className="custom-label">Logo au centre</span>
                 <div className="logo-row">
@@ -286,12 +323,10 @@ function App() {
               </div>
             </div>
           )}
-
           <div className="btn-row">
             <button className="button generate" onClick={generateQrCode}>Générer</button>
             <button className="button clear"    onClick={clearAll}>Effacer</button>
           </div>
-
           {qrVisible && (
             <div className="qr-box">
               <div ref={qrContainerRef} className="qr-canvas-wrapper" />
@@ -301,7 +336,7 @@ function App() {
         </div>
       )}
 
-      {/* ── SCANNER ── */}
+      {/* ═══ SCANNER ═══ */}
       {mode === "scan" && (
         <div className="panel">
           <div className="sub-tabs">
@@ -309,37 +344,29 @@ function App() {
             <button className={`sub-tab ${scanMode === "file"   ? "active" : ""}`} onClick={() => handleScanModeSwitch("file")}>🖼️ Joindre une photo</button>
           </div>
 
-          {/* ── Mode Caméra ── */}
           {scanMode === "camera" && !scannedResult && (
             <div className="camera-section">
-              {/*
-                Le conteneur vidéo est TOUJOURS dans le DOM quand ce mode est actif.
-                La classe CSS "active" le rend visible uniquement quand la caméra tourne.
-              */}
-              <div
-                id="qr-reader-container"
-                className={`qr-reader-box ${cameraActive ? "active" : ""}`}
-              />
-
-              {!cameraActive ? (
+              {/* ── Conteneur vidéo Web uniquement ── */}
+              {!isNative && (
+                <div id="qr-reader-container" className={`qr-reader-box ${cameraActive ? "active" : ""}`} />
+              )}
+              {!cameraActive && (
                 <button className="button generate camera-start-btn" onClick={startCamera}>
                   📷 Démarrer la caméra
                 </button>
-              ) : (
+              )}
+              {!isNative && cameraActive && (
                 <>
-                  <p className="panel-desc scanning-label">🔄 Scan en cours…</p>
+                  <p className="panel-desc" style={{color:"#a5f3fc",animation:"pulse 1.5s ease-in-out infinite"}}>🔄 Scan en cours…</p>
                   <button className="button clear" onClick={stopCamera}>Arrêter</button>
                 </>
               )}
             </div>
           )}
 
-          {/* ── Mode Fichier ── */}
           {scanMode === "file" && !scannedResult && (
             <>
-              {/* Div fantôme requis par Html5Qrcode.scanFile */}
               <div id="qr-file-helper" style={{ display: "none" }} />
-
               <div className="file-upload-zone" onClick={() => fileInputRef.current.click()}>
                 <span className="upload-icon">📂</span>
                 <p className="upload-text">Cliquez pour choisir une image</p>
@@ -361,6 +388,37 @@ function App() {
           )}
         </div>
       )}
+
+      {/* ═══ OVERLAY SCANNER NATIF — toujours dans le DOM ═══
+          Affiché uniquement via CSS quand body.scanner-active est actif   */}
+      <div className="native-scan-overlay">
+        {/* Barre du haut */}
+        <div className="scan-topbar">
+          <button className="scan-close-btn" onClick={stopCamera}>✕</button>
+          <span className="scan-topbar-title">Scanner un QR Code</span>
+        </div>
+
+        {/* Zone centrale avec masques et cadre */}
+        <div className="scan-middle">
+          <div className="scan-mask-top" />
+          <div className="scan-mask-row">
+            <div className="scan-mask-side" />
+            <div className="scan-frame">
+              <div className="corner-bl" />
+              <div className="corner-br" />
+              <div className="scan-line" />
+            </div>
+            <div className="scan-mask-side" />
+          </div>
+          <div className="scan-mask-bottom" />
+        </div>
+
+        {/* Bas */}
+        <div className="scan-bottom">
+          <p className="scan-hint">Placez le QR code dans le cadre</p>
+          <button className="scan-stop-btn" onClick={stopCamera}>Annuler</button>
+        </div>
+      </div>
 
       {status && (
         <div className={`status ${status.type}`}>

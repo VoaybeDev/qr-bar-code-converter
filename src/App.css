@@ -164,23 +164,16 @@ body {
 .sub-tab.active { background: rgba(167,139,250,0.2); border-color: #a78bfa; color: #ddd6fe; }
 .sub-tab:hover:not(.active) { background: rgba(255,255,255,0.07); color: rgba(255,255,255,0.75); }
 
-/* ── Camera ── */
+/* ── Camera section ── */
 .camera-section {
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 12px;
 }
-
 .camera-start-btn { width: 100%; padding: 16px; font-size: 1rem; flex: none; }
-.scanning-label   { color: #a5f3fc; animation: pulse 1.5s ease-in-out infinite; }
 
-/*
-  Conteneur vidéo Html5Qrcode.
-  Par défaut invisible (hauteur 0) ; la classe .active l'affiche.
-  On ne peut PAS utiliser display:none car Html5Qrcode a besoin que
-  l'élément ait des dimensions pour injecter la vidéo correctement.
-*/
+/* ── Conteneur vidéo Web ── */
 .qr-reader-box {
   width: 100%;
   overflow: hidden;
@@ -189,20 +182,198 @@ body {
   opacity: 0;
   transition: max-height 0.3s ease, opacity 0.3s ease;
 }
-.qr-reader-box.active {
-  max-height: 400px;
-  opacity: 1;
+.qr-reader-box.active { max-height: 400px; opacity: 1; }
+#qr-reader-container video { width: 100% !important; border-radius: 12px; display: block; }
+#qr-reader-container img { display: none !important; }
+#qr-reader-container > div[style*="text-align"] { display: none !important; }
+
+/* ════════════════════════════════════════════════════════
+   SCANNER NATIF CAPACITOR — style Xender plein écran
+   ════════════════════════════════════════════════════════ */
+
+/* Quand le scan natif est actif :
+   - body transparent → on voit la caméra native derrière
+   - tout le contenu de .app est caché
+   - SEUL .native-scan-overlay reste visible (position:fixed)         */
+body.scanner-active {
+  background: transparent !important;
+  padding: 0 !important;
+}
+body.scanner-active .app {
+  /* Rendre la carte de l'app invisible mais garder le DOM */
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+  padding: 0 !important;
+}
+/* Cacher TOUS les enfants directs de .app sauf l'overlay */
+body.scanner-active .app > *:not(.native-scan-overlay) {
+  visibility: hidden !important;
+  pointer-events: none !important;
 }
 
-/* Styles injectés par Html5Qrcode à l'intérieur du conteneur */
-#qr-reader-container video {
-  width: 100% !important;
-  border-radius: 12px;
-  display: block;
+/* ── Overlay plein écran style Xender ── */
+.native-scan-overlay {
+  display: none; /* caché par défaut */
 }
-/* Masquer les éléments UI par défaut de Html5Qrcode */
-#qr-reader-container img  { display: none !important; }
-#qr-reader-container > div[style*="text-align"] { display: none !important; }
+body.scanner-active .native-scan-overlay {
+  display: flex;
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  z-index: 99999;
+  padding: 0;
+}
+
+/* ── Barre du haut ── */
+.scan-topbar {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  padding: 52px 20px 16px;
+  background: linear-gradient(to bottom, rgba(0,0,0,0.7), transparent);
+}
+.scan-topbar-title {
+  flex: 1;
+  text-align: center;
+  color: white;
+  font-size: 1.1rem;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+}
+.scan-close-btn {
+  position: absolute;
+  left: 20px;
+  background: rgba(255,255,255,0.15);
+  border: none;
+  color: white;
+  width: 38px; height: 38px;
+  border-radius: 50%;
+  font-size: 1.1rem;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  backdrop-filter: blur(8px);
+}
+
+/* ── Zone centrale : masques sombres + cadre ── */
+.scan-middle {
+  flex: 1;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+
+/* Masque sombre au-dessus du cadre */
+.scan-mask-top,
+.scan-mask-bottom {
+  width: 100%;
+  background: rgba(0,0,0,0.55);
+}
+.scan-mask-top    { height: 80px; }
+.scan-mask-bottom { height: 80px; }
+
+/* Rangée centrale : masque gauche + cadre + masque droit */
+.scan-mask-row {
+  width: 100%;
+  display: flex;
+  align-items: stretch;
+}
+.scan-mask-side {
+  flex: 1;
+  background: rgba(0,0,0,0.55);
+}
+
+/* ── Le cadre transparent ── */
+.scan-frame {
+  width: 260px;
+  height: 260px;
+  position: relative;
+  flex-shrink: 0;
+}
+
+/* Coins style Xender — trait épais coloré */
+.scan-frame::before,  .scan-frame::after,
+.corner-bl::before,   .corner-br::before {
+  content: "";
+  position: absolute;
+  width: 40px;
+  height: 40px;
+  border-color: #a78bfa;
+  border-style: solid;
+}
+.scan-frame::before {
+  top: 0; left: 0;
+  border-width: 4px 0 0 4px;
+  border-radius: 6px 0 0 0;
+}
+.scan-frame::after {
+  top: 0; right: 0;
+  border-width: 4px 4px 0 0;
+  border-radius: 0 6px 0 0;
+}
+.corner-bl::before {
+  bottom: 0; left: 0;
+  border-width: 0 0 4px 4px;
+  border-radius: 0 0 0 6px;
+}
+.corner-br::before {
+  bottom: 0; right: 0;
+  border-width: 0 4px 4px 0;
+  border-radius: 0 0 6px 0;
+}
+
+/* ── Ligne de scan animée (style Xender) ── */
+.scan-line {
+  position: absolute;
+  left: 8px; right: 8px;
+  height: 3px;
+  background: linear-gradient(90deg,
+    transparent 0%,
+    rgba(167,139,250,0.3) 20%,
+    #a78bfa 50%,
+    rgba(167,139,250,0.3) 80%,
+    transparent 100%
+  );
+  border-radius: 2px;
+  animation: scanLine 2.4s ease-in-out infinite;
+  box-shadow: 0 0 12px #a78bfa, 0 0 24px rgba(167,139,250,0.4);
+}
+
+/* ── Bas de l'overlay ── */
+.scan-bottom {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+  padding: 28px 20px 48px;
+  background: linear-gradient(to top, rgba(0,0,0,0.7), transparent);
+}
+.scan-hint {
+  color: rgba(255,255,255,0.85);
+  font-size: 0.95rem;
+  font-weight: 500;
+  text-align: center;
+}
+.scan-stop-btn {
+  background: rgba(255,255,255,0.15);
+  border: 1.5px solid rgba(255,255,255,0.3);
+  color: white;
+  padding: 13px 48px;
+  border-radius: 50px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  backdrop-filter: blur(8px);
+  transition: background 0.2s;
+}
+.scan-stop-btn:active { background: rgba(255,255,255,0.25); }
 
 /* ── File upload ── */
 .file-upload-zone {
@@ -239,8 +410,14 @@ body {
 .signature a:hover { color: #a78bfa; }
 
 /* ── Animations ── */
-@keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
-@keyframes pulse  { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
+@keyframes fadeIn  { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes pulse   { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
+@keyframes scanLine {
+  0%   { top: 4px;   opacity: 0; }
+  5%   { opacity: 1; }
+  95%  { opacity: 1; }
+  100% { top: 252px; opacity: 0; }
+}
 
 /* ── Mobile ── */
 @media (max-width: 480px) {
