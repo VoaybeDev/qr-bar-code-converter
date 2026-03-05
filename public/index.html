@@ -1,11 +1,42 @@
 <!DOCTYPE html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>QR Code Generator</title>
-  </head>
-  <body>
-    <div id="root"></div> 
-  </body>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+
+  <!-- Icône QR Code dynamique via URL -->
+  <link rel="icon" href="https://cdn-icons-png.flaticon.com/512/2098/2098402.png" type="image/png" />
+  <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/2098/2098402.png" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#6d28d9" />
+  <meta name="description" content="Générez et scannez vos QR Codes facilement — gratuit et instantané." />
+
+  <!-- Google Fonts modernes -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+
+  <title>Chargement...</title>
+
+  <script>
+    fetch("https://api.jsonbin.io/v3/qs/qrstudio-config", {
+      method: "GET",
+      headers: { "Content-Type": "application/json" }
+    })
+    .then(res => res.json())
+    .then(data => {
+      document.title = data.appName || "QR Code Studio ⚡";
+      if (data.iconUrl) {
+        const link = document.querySelector("link[rel='icon']");
+        if (link) link.href = data.iconUrl;
+      }
+    })
+    .catch(() => {
+      document.title = "QR Code Studio ⚡";
+    });
+  </script>
+</head>
+<body>
+  <div id="root"></div>
+</body>
 </html>
